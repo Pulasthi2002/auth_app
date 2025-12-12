@@ -90,12 +90,12 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
+              Color(0xFF667eea),
+              Color(0xFF764ba2),
               Color(0xFFf093fb),
-              Color(0xFFf5576c),
-              Color(0xFFfeca57),
             ],
           ),
         ),
@@ -320,7 +320,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                     onPressed: _isLoading ? null : _register,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
-                                      foregroundColor: Color(0xFFf5576c),
+                                      foregroundColor: Color(0xFF764ba2),
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(16),
@@ -333,7 +333,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.5,
                                         valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color(0xFFf5576c),
+                                          Color(0xFF764ba2),
                                         ),
                                       ),
                                     )
