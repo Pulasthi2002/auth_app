@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../services/api_service.dart';
+import '../providers/user_provider.dart';
+import '../models/user_model.dart';
 import 'login_screen.dart';
+import 'user_details_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   late AnimationController _animationController;
@@ -53,6 +57,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             _userData = result['data']['user'];
             _isLoading = false;
           });
+
+          // Save user data to Riverpod provider
+          final user = UserModel.fromJson(result['data']['user']);
+          ref.read(userProvider.notifier).setUser(user);
         } else {
           _logout();
         }
@@ -66,12 +74,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
+    // Clear user from provider
+    ref.read(userProvider.notifier).clearUser();
+
     if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
+  }
+
+  void _navigateToUserDetails() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const UserDetailsScreen()),
+    );
   }
 
   @override
@@ -144,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                       onPressed: () => Navigator.pop(context),
                                       child: Text(
                                         'Cancel',
-                                        style: TextStyle(color: Colors.grey.shade600),
+                                        style: TextStyle(color: Colors.black),
                                       ),
                                     ),
                                     ElevatedButton(
@@ -158,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                                           borderRadius: BorderRadius.circular(10),
                                         ),
                                       ),
-                                      child: const Text('Logout'),
+                                      child: const Text('Logout', style: TextStyle(color: Colors.black)),
                                     ),
                                   ],
                                 ),
@@ -279,6 +297,42 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // View Details Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _navigateToUserDetails,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Color(0xFF764ba2),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.info_outline_rounded),
+                            SizedBox(width: 12),
+                            Text(
+                              'View Detailed Information',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
