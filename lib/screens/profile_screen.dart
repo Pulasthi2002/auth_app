@@ -1,3 +1,4 @@
+// lib/screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -189,7 +190,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   ),
                   const SizedBox(height: 20),
 
-                  // Profile Avatar and Name
+                  // Profile Avatar with Picture
                   Container(
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
@@ -202,7 +203,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       ),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.all(28),
+                      width: 140,
+                      height: 140,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
@@ -214,10 +216,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                           ],
                         ),
                       ),
-                      child: const Icon(
-                        Icons.person_rounded,
-                        size: 80,
-                        color: Colors.white,
+                      child: ClipOval(
+                        child: _userData?['profile_picture'] != null
+                            ? Image.network(
+                          _userData!['profile_picture'],
+                          fit: BoxFit.cover,
+                          width: 140,
+                          height: 140,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.person_rounded,
+                              size: 70,
+                              color: Colors.white,
+                            );
+                          },
+                        )
+                            : const Icon(
+                          Icons.person_rounded,
+                          size: 70,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),

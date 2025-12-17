@@ -2,15 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Use your computer's IP address for real device testing
-  // For Android emulator: http://10.0.2.2:3000
-  // For iOS simulator: http://localhost:3000
-  // For real device: http://YOUR_COMPUTER_IP:3000
   static const String baseUrl = 'http://10.0.2.2:3000/api/auth';
 
-  // Register new user
+  // Register with profile picture
   static Future<Map<String, dynamic>> register(
-      String name, String email, String password) async {
+      String name, String email, String password, {String? profilePicture}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
@@ -19,6 +15,7 @@ class ApiService {
           'name': name,
           'email': email,
           'password': password,
+          'profilePicture': profilePicture,
         }),
       );
 
@@ -37,7 +34,7 @@ class ApiService {
     }
   }
 
-  // Login user
+  // Login and other methods remain same
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
@@ -65,7 +62,6 @@ class ApiService {
     }
   }
 
-  // Get user profile
   static Future<Map<String, dynamic>> getProfile(String token) async {
     try {
       final response = await http.get(

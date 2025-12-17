@@ -75,7 +75,7 @@ class UserDetailsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(24.0),
                   child: Column(
                     children: [
-                      // User Avatar
+                      // User Avatar with Profile Picture
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
@@ -88,7 +88,8 @@ class UserDetailsScreen extends ConsumerWidget {
                           ),
                         ),
                         child: Container(
-                          padding: const EdgeInsets.all(24),
+                          width: 140,
+                          height: 140,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
@@ -98,10 +99,39 @@ class UserDetailsScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            size: 60,
-                            color: Colors.white,
+                          child: ClipOval(
+                            child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                                ? Image.network(
+                              user.profilePicture!,
+                              fit: BoxFit.cover,
+                              width: 140,
+                              height: 140,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person_rounded,
+                                  size: 70,
+                                  color: Colors.white,
+                                );
+                              },
+                            )
+                                : const Icon(
+                              Icons.person_rounded,
+                              size: 70,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -185,9 +215,49 @@ class UserDetailsScreen extends ConsumerWidget {
                                   'Standard User',
                                   Icons.verified_user_outlined,
                                 ),
+
+                                if (user.profilePicture != null && user.profilePicture!.isNotEmpty) ...[
+                                  const SizedBox(height: 20),
+                                  _buildDetailItem(
+                                    'Profile Picture',
+                                    'Uploaded',
+                                    Icons.image_outlined,
+                                  ),
+                                ],
                               ],
                             ),
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Info Message
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'This data is loaded from memory using Riverpod state management. No API call was made!',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

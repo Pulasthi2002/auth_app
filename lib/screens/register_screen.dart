@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../services/api_service.dart';
+import '../services/image_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -18,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   bool _obscurePassword = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  String? _profilePictureBase64;
 
   @override
   void initState() {
@@ -43,6 +47,50 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     super.dispose();
   }
 
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Choose Image Source'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFF764ba2)),
+              title: const Text('Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(fromCamera: false);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Color(0xFF764ba2)),
+              title: const Text('Camera'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _pickImage(fromCamera: true);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage({required bool fromCamera}) async {
+    setState(() => _isLoading = true);
+
+    final base64Image = await ImageService.pickAndProcessImage(fromCamera: fromCamera);
+
+    setState(() {
+      _isLoading = false;
+      if (base64Image != null) {
+        _profilePictureBase64 = base64Image;
+      }
+    });
+  }
+
   void _register() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -54,6 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       _nameController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text,
+      profilePicture: _profilePictureBase64,
     );
 
     setState(() => _isLoading = false);
@@ -108,7 +157,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Back Button
                     Align(
                       alignment: Alignment.topLeft,
                       child: IconButton(
@@ -118,7 +166,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                     ),
                     const SizedBox(height: 20),
 
-                    // Glassmorphic Card
                     ClipRRect(
                       borderRadius: BorderRadius.circular(30),
                       child: BackdropFilter(
@@ -137,25 +184,85 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             key: _formKey,
                             child: Column(
                               children: [
-                                // Icon with gradient background
-                                Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.white.withOpacity(0.3),
-                                        Colors.white.withOpacity(0.1),
-                                      ],
+                                // Profile Picture Picker
+                                Stack(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: _isLoading ? null : _showImageSourceDialog,
+                                      child: Container(
+                                        width: 120,
+                                        height: 120,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.white.withOpacity(0.3),
+                                              Colors.white.withOpacity(0.1),
+                                            ],
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(0.5),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: ClipOval(
+                                          child: _profilePictureBase64 == null
+                                              ? Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.add_a_photo,
+                                                size: 40,
+                                                color: Colors.white.withOpacity(0.8),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'Add Photo',
+                                                style: TextStyle(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                              : Image.memory(
+                                            base64Decode(_profilePictureBase64!.split(',')[1]),
+                                            fit: BoxFit.cover,
+                                            width: 120,
+                                            height: 120,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.person_add_alt_1_rounded,
-                                    size: 60,
-                                    color: Colors.white,
-                                  ),
+                                    if (_profilePictureBase64 != null)
+                                      Positioned(
+                                        right: 0,
+                                        bottom: 0,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _profilePictureBase64 = null;
+                                            });
+                                          },
+                                          child: Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: Colors.white, width: 2),
+                                            ),
+                                            child: const Icon(
+                                              Icons.close,
+                                              size: 16,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(height: 24),
+
                                 const Text(
                                   'Create Account',
                                   style: TextStyle(
