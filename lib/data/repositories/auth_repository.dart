@@ -1,15 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/constants/api_constants.dart';
 
-class ApiService {
-  static const String baseUrl = 'http://10.0.2.2:3000/api/auth';
-
-  // Register with profile picture
-  static Future<Map<String, dynamic>> register(
-      String name, String email, String password, {String? profilePicture}) async {
+class AuthRepository {
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String email,
+    required String password,
+    String? profilePicture,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/register'),
+        Uri.parse(ApiConstants.registerEndpoint),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'name': name,
@@ -34,12 +36,13 @@ class ApiService {
     }
   }
 
-  // Login and other methods remain same
-  static Future<Map<String, dynamic>> login(
-      String email, String password) async {
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
+        Uri.parse(ApiConstants.loginEndpoint),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': email,
@@ -62,10 +65,10 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> getProfile(String token) async {
+  Future<Map<String, dynamic>> getProfile(String token) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/profile'),
+        Uri.parse(ApiConstants.profileEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -3,11 +3,10 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
-class ImageService {
-  static final ImagePicker _picker = ImagePicker();
+class ImageRepository {
+  final ImagePicker _picker = ImagePicker();
 
-  // Pick image from gallery or camera
-  static Future<File?> pickImage({required bool fromCamera}) async {
+  Future<File?> pickImage({required bool fromCamera}) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(
         source: fromCamera ? ImageSource.camera : ImageSource.gallery,
@@ -20,13 +19,11 @@ class ImageService {
 
       return File(pickedFile.path);
     } catch (e) {
-      print('Error picking image: $e');
       return null;
     }
   }
 
-  // Compress image while maintaining aspect ratio
-  static Future<File?> compressImage(File file) async {
+  Future<File?> compressImage(File file) async {
     try {
       final filePath = file.absolute.path;
       final lastIndex = filePath.lastIndexOf('.');
@@ -45,25 +42,21 @@ class ImageService {
 
       return File(result.path);
     } catch (e) {
-      print('Error compressing image: $e');
       return file;
     }
   }
 
-  // Convert image to base64 for API upload
-  static Future<String> imageToBase64(File imageFile) async {
+  Future<String> imageToBase64(File imageFile) async {
     try {
       final bytes = await imageFile.readAsBytes();
       final base64String = base64Encode(bytes);
       return 'data:image/jpeg;base64,$base64String';
     } catch (e) {
-      print('Error converting to base64: $e');
       return '';
     }
   }
 
-  // Complete flow: pick, compress, convert to base64
-  static Future<String?> pickAndProcessImage({required bool fromCamera}) async {
+  Future<String?> pickAndProcessImage({required bool fromCamera}) async {
     final pickedFile = await pickImage(fromCamera: fromCamera);
     if (pickedFile == null) return null;
 
